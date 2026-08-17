@@ -398,7 +398,9 @@
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("service-worker.js").catch(() => {
+      navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" }).then((reg) => {
+        reg.update();
+      }).catch(() => {
         /* offline support is best-effort */
       });
     });
