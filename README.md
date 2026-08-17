@@ -1,6 +1,8 @@
-# Life Counter
+# Life Counter PWA
 
-A free and Open Source life counter for Magic The Gathering. Track your life points without being tracked !
+A free and Open Source life counter for Magic: The Gathering, as an installable web app. Track your life points without being tracked!
+
+This is the PWA port of the [Android Life Counter app](https://codeberg.org/skynet2982/life-counter) — same features, installable on iPhone (and anywhere else a browser runs).
 
 Main features:
 * Max compatibility, no tracking, no ads.
@@ -9,21 +11,25 @@ Main features:
 * See life points history in side panes.
 * To see full history with times you can long press on life points history.
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/fr.nogafam.lifecounter/)
-
-Or download the latest APK from the [Releases Section](https://codeberg.org/skynet2982/life-counter/releases/latest).
-
-A PWA port for iOS/other platforms lives in [`web/`](web/) and is auto-deployed to GitHub Pages on every push to `main` (see [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)).
-
-📱 Open **https://skynet2982.github.io/life-counter-pwa/** on your iPhone (or scan the QR code below), then use Safari's Share → Add to Home Screen to install it.
+📱 Open **https://skynet2982.github.io/life-counter-pwa/** on your phone (or scan the QR code below), then use your browser's "Add to Home Screen" option to install it.
 
 <img src="screenshots/qr-code.png" alt="QR code linking to the Life Counter PWA" width="180">
 
+## Development
 
-![screenshot1.png](screenshots%2Fscreenshot1.png)
-![screenshot2.png](screenshots%2Fscreenshot2.png)
-![screenshot3.png](screenshots%2Fscreenshot3.png)
-![screenshot4.png](screenshots%2Fscreenshot4.png)
-![screenshot5.png](screenshots%2Fscreenshot5.png)
+The app lives entirely in [`web/`](web/) — plain HTML/CSS/JS, no build step, no dependencies.
+
+To run it locally:
+
+```sh
+cd web
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
+
+Every push to `main` that touches `web/**` is automatically built and deployed to GitHub Pages by [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
+
+## License
+
+GNU AGPLv3 — see [LICENSE](LICENSE).

@@ -99,10 +99,22 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
-  font-size: 32px;
+  font-size: 26px;
+  font-weight: 600;
+  background: transparent;
   z-index: 6;
   pointer-events: none;
+}
+
+#differenceView.hasValue {
+  background: #fff;
 }
 
 #timerView {
@@ -152,7 +164,7 @@ body {
   z-index: 20;
   background: rgba(0, 0, 0, 0.92);
   color: #fff;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -160,11 +172,7 @@ body {
   padding: 24px;
 }
 
-#rotateHint.hidden {
-  display: none;
-}
-
-@media (orientation: portrait) and (max-height: 600px) {
+@media (orientation: portrait) and (max-width: 900px) {
   #rotateHint {
     display: flex;
   }

@@ -48,13 +48,15 @@
   function refreshDifferenceView() {
     if (difference === 0) {
       differenceEl.textContent = "";
-      differenceEl.style.color = "#fff";
+      differenceEl.classList.remove("hasValue");
     } else if (difference > 0) {
       differenceEl.textContent = "+" + difference;
-      differenceEl.style.color = "#4caf50";
+      differenceEl.style.color = "#2e7d32";
+      differenceEl.classList.add("hasValue");
     } else {
       differenceEl.textContent = String(difference);
-      differenceEl.style.color = "#f44336";
+      differenceEl.style.color = "#c62828";
+      differenceEl.classList.add("hasValue");
     }
   }
 
@@ -363,6 +365,17 @@
   document.getElementById("timerInputCancel").addEventListener("click", () => hideOverlay("timerInputDialog"));
 
   document.getElementById("historyCloseBtn").addEventListener("click", () => hideOverlay("historyDialog"));
+
+  // ---------- orientation lock (best effort, ignored where unsupported e.g. iOS Safari) ----------
+
+  function tryLockOrientation() {
+    if (screen.orientation && typeof screen.orientation.lock === "function") {
+      screen.orientation.lock("landscape").catch(() => {});
+    }
+  }
+
+  window.addEventListener("load", tryLockOrientation);
+  document.addEventListener("pointerdown", tryLockOrientation, { once: true });
 
   // ---------- init ----------
 

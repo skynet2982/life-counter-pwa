@@ -1,19 +1,9 @@
-# Android / Gradle
-*.iml
-.gradle/
-/local.properties
-/.idea/
-.externalNativeBuild/
-.cxx/
-build/
-captures/
-.navigation/
-
 # macOS
 .DS_Store
 
 # Editors
 *.swp
+/.idea/
 
 # Node (in case tooling is added under web/ later)
 node_modules/
