@@ -22,19 +22,36 @@
 <div id="app">
 
   <div id="playerLayout">
-    <section class="player" id="player1" data-player="1">
-      <div class="lifePoints" id="player1Points">20</div>
-    </section>
+    <div class="side">
+      <section class="player" id="player1" data-player="1">
+        <div class="historyStrip historyStrip--left" id="player1History"></div>
+        <div class="lifePoints" id="player1Points">20</div>
+      </section>
+
+      <div class="separator separator--horizontal"></div>
+
+      <section class="player player--secondary" id="player3" data-player="3">
+        <div class="historyStrip historyStrip--left" id="player3History"></div>
+        <div class="lifePoints" id="player3Points">20</div>
+      </section>
+    </div>
 
     <div class="separator"></div>
 
-    <section class="player" id="player2" data-player="2">
-      <div class="lifePoints" id="player2Points">20</div>
-    </section>
-  </div>
+    <div class="side">
+      <section class="player" id="player2" data-player="2">
+        <div class="lifePoints" id="player2Points">20</div>
+        <div class="historyStrip historyStrip--right" id="player2History"></div>
+      </section>
 
-  <div class="historyStrip historyStrip--left" id="player1History"></div>
-  <div class="historyStrip historyStrip--right" id="player2History"></div>
+      <div class="separator separator--horizontal"></div>
+
+      <section class="player player--secondary" id="player4" data-player="4">
+        <div class="lifePoints" id="player4Points">20</div>
+        <div class="historyStrip historyStrip--right" id="player4History"></div>
+      </section>
+    </div>
+  </div>
 
   <div id="differenceView"></div>
 
@@ -49,6 +66,7 @@
 <!-- Menu action sheet -->
 <div id="menuSheet" class="overlay hidden">
   <div class="sheet">
+    <button id="gameModeBtn" class="sheetItem" data-i18n="gameMode">Game mode</button>
     <button id="resetGameBtn" class="sheetItem" data-i18n="resetGame">Reset game</button>
     <button id="resetLifeBtn" class="sheetItem" data-i18n="resetLifePoints">Reset life points</button>
     <button id="toggleTimerBtn" class="sheetItem" data-i18n="toggleTimer">Add/Remove timer</button>
@@ -64,6 +82,20 @@
     <div class="dialogButtons">
       <button id="resetConfirmYes" data-i18n="yes">Yes</button>
       <button id="resetConfirmNo" data-i18n="no">No</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game mode dialog -->
+<div id="gameModeDialog" class="overlay hidden">
+  <div class="dialog">
+    <p data-i18n="selectGameMode">Select game mode</p>
+    <div class="dialogButtons">
+      <button id="mode2Btn" data-i18n="twoPlayers">2 Players</button>
+      <button id="mode4Btn" data-i18n="fourPlayers">4 Players</button>
+    </div>
+    <div class="dialogButtons">
+      <button id="gameModeCancelBtn" data-i18n="cancel">Cancel</button>
     </div>
   </div>
 </div>

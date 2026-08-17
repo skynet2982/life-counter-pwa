@@ -24,10 +24,13 @@
   const players = {
     1: createPlayer(document.getElementById("player1Points"), document.getElementById("player1History")),
     2: createPlayer(document.getElementById("player2Points"), document.getElementById("player2History")),
+    3: createPlayer(document.getElementById("player3Points"), document.getElementById("player3History")),
+    4: createPlayer(document.getElementById("player4Points"), document.getElementById("player4History")),
   };
 
   let difference = 0;
   let activePlayer = null;
+  let gameMode = 2;
 
   const differenceEl = document.getElementById("differenceView");
 
@@ -116,8 +119,7 @@
   // ---------- game actions ----------
 
   function refreshViews() {
-    refreshPlayerView(players[1]);
-    refreshPlayerView(players[2]);
+    Object.values(players).forEach(refreshPlayerView);
     refreshDifferenceView();
   }
 
@@ -143,6 +145,13 @@
   function resetGame() {
     resetGameKeepTimer();
     resetTimer();
+  }
+
+  function setGameMode(mode) {
+    if (mode === gameMode) return;
+    gameMode = mode;
+    document.getElementById("app").classList.toggle("mode-4", mode === 4);
+    resetGame();
   }
 
   // ---------- timer ----------
@@ -310,8 +319,9 @@
     });
   }
 
-  attachLongPress(players[1].historyEl, () => openHistoryDialog(players[1]));
-  attachLongPress(players[2].historyEl, () => openHistoryDialog(players[2]));
+  Object.values(players).forEach((player) => {
+    attachLongPress(player.historyEl, () => openHistoryDialog(player));
+  });
 
   // ---------- overlays / dialogs ----------
 
@@ -325,6 +335,20 @@
 
   document.getElementById("menuButton").addEventListener("click", () => showOverlay("menuSheet"));
   document.getElementById("menuCancelBtn").addEventListener("click", () => hideOverlay("menuSheet"));
+
+  document.getElementById("gameModeBtn").addEventListener("click", () => {
+    hideOverlay("menuSheet");
+    showOverlay("gameModeDialog");
+  });
+  document.getElementById("mode2Btn").addEventListener("click", () => {
+    setGameMode(2);
+    hideOverlay("gameModeDialog");
+  });
+  document.getElementById("mode4Btn").addEventListener("click", () => {
+    setGameMode(4);
+    hideOverlay("gameModeDialog");
+  });
+  document.getElementById("gameModeCancelBtn").addEventListener("click", () => hideOverlay("gameModeDialog"));
 
   document.getElementById("resetGameBtn").addEventListener("click", () => {
     hideOverlay("menuSheet");
