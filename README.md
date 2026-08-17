@@ -15,7 +15,12 @@ Main features:
 
 Or download the latest APK from the [Releases Section](https://codeberg.org/skynet2982/life-counter/releases/latest).
 
-A PWA port for iOS/other platforms lives in [`web/`](web/) and is auto-deployed to GitHub Pages on every push to `main` (see [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)). Once GitHub Pages is enabled (Settings → Pages → Source: GitHub Actions), it will be reachable at `https://<owner>.github.io/<repo>/` — add it to your iPhone home screen via Safari's Share → Add to Home Screen.
+A PWA port for iOS/other platforms lives in [`web/`](web/) and is auto-deployed to GitHub Pages on every push to `main` (see [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)).
+
+📱 Open **https://skynet2982.github.io/life-counter-pwa/** on your iPhone (or scan the QR code below), then use Safari's Share → Add to Home Screen to install it.
+
+<img src="screenshots/qr-code.png" alt="QR code linking to the Life Counter PWA" width="180">
+
 
 ![screenshot1.png](screenshots%2Fscreenshot1.png)
 ![screenshot2.png](screenshots%2Fscreenshot2.png)
