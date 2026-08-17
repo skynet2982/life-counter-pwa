@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Life Counter</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+
+<!-- iOS standalone / home screen support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Life Counter">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <div id="playerLayout">
+    <section class="player" id="player1" data-player="1">
+      <div class="lifePoints" id="player1Points">20</div>
+    </section>
+
+    <div class="separator"></div>
+
+    <section class="player" id="player2" data-player="2">
+      <div class="lifePoints" id="player2Points">20</div>
+    </section>
+  </div>
+
+  <div class="historyStrip historyStrip--left" id="player1History"></div>
+  <div class="historyStrip historyStrip--right" id="player2History"></div>
+
+  <div id="differenceView"></div>
+
+  <div id="timerView" class="hidden"></div>
+
+  <button id="menuButton" aria-label="Menu">Menu</button>
+
+  <div id="rotateHint" class="hidden">Tourne ton téléphone pour une meilleure expérience &#8635;</div>
+
+</div>
+
+<!-- Menu action sheet -->
+<div id="menuSheet" class="overlay hidden">
+  <div class="sheet">
+    <button id="resetGameBtn" class="sheetItem">Reset game</button>
+    <button id="resetLifeBtn" class="sheetItem">Reset life points</button>
+    <button id="toggleTimerBtn" class="sheetItem">Add/Remove timer</button>
+    <button id="menuCancelBtn" class="sheetItem cancel">Annuler</button>
+  </div>
+</div>
+
+<!-- Reset confirmation dialog -->
+<div id="resetConfirmDialog" class="overlay hidden">
+  <div class="dialog">
+    <p>Es-tu sûr de vouloir réinitialiser la partie ?</p>
+    <div class="dialogButtons">
+      <button id="resetConfirmYes">Oui</button>
+      <button id="resetConfirmNo">Non</button>
+    </div>
+  </div>
+</div>
+
+<!-- Timer input dialog -->
+<div id="timerInputDialog" class="overlay hidden">
+  <div class="dialog">
+    <p>Définir le timer (minutes)</p>
+    <input type="number" inputmode="numeric" pattern="[0-9]*" id="timerInput" min="0">
+    <div class="dialogButtons">
+      <button id="timerInputOk">OK</button>
+      <button id="timerInputCancel">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- History entries dialog -->
+<div id="historyDialog" class="overlay hidden">
+  <div class="dialog historyDialogContent">
+    <p>Historique</p>
+    <ul id="historyList"></ul>
+    <div class="dialogButtons">
+      <button id="historyCloseBtn">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

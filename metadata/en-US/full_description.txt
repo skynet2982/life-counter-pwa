@@ -1,0 +1,8 @@
+A free and Open Source life counter for Magic The Gathering. Track your life points without being tracked !
+
+Main features:
+* Max compatibility, no tracking, no ads.
+* Swipe up and down to quickly add or remove 5 life points.
+* Add a timer to track your game duration.
+* See life points history in side panes.
+* To see full history with times you can long press on life points history.

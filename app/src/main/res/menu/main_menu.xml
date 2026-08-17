@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+    android:id="@+id/resetGameButton"
+    android:title="Reset game" />
+
+  <item
+    android:id="@+id/resetLifePointsButton"
+    android:title="Reset life points" />
+
+  <item
+    android:id="@+id/timerButton"
+    android:title="Add/Remove timer" />
+</menu>
