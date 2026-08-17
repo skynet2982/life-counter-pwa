@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -40,29 +40,29 @@
 
   <div id="timerView" class="hidden"></div>
 
-  <button id="menuButton" aria-label="Menu">Menu</button>
+  <button id="menuButton" aria-label="Menu" data-i18n="menuButton">Menu</button>
 
-  <div id="rotateHint">Tourne ton téléphone pour une meilleure expérience &#8635;</div>
+  <div id="rotateHint" data-i18n="rotateHint">Rotate your phone for a better experience &#8635;</div>
 
 </div>
 
 <!-- Menu action sheet -->
 <div id="menuSheet" class="overlay hidden">
   <div class="sheet">
-    <button id="resetGameBtn" class="sheetItem">Reset game</button>
-    <button id="resetLifeBtn" class="sheetItem">Reset life points</button>
-    <button id="toggleTimerBtn" class="sheetItem">Add/Remove timer</button>
-    <button id="menuCancelBtn" class="sheetItem cancel">Annuler</button>
+    <button id="resetGameBtn" class="sheetItem" data-i18n="resetGame">Reset game</button>
+    <button id="resetLifeBtn" class="sheetItem" data-i18n="resetLifePoints">Reset life points</button>
+    <button id="toggleTimerBtn" class="sheetItem" data-i18n="toggleTimer">Add/Remove timer</button>
+    <button id="menuCancelBtn" class="sheetItem cancel" data-i18n="cancel">Cancel</button>
   </div>
 </div>
 
 <!-- Reset confirmation dialog -->
 <div id="resetConfirmDialog" class="overlay hidden">
   <div class="dialog">
-    <p>Es-tu sûr de vouloir réinitialiser la partie ?</p>
+    <p data-i18n="resetConfirmMessage">Are you sure you want to reset the game?</p>
     <div class="dialogButtons">
-      <button id="resetConfirmYes">Oui</button>
-      <button id="resetConfirmNo">Non</button>
+      <button id="resetConfirmYes" data-i18n="yes">Yes</button>
+      <button id="resetConfirmNo" data-i18n="no">No</button>
     </div>
   </div>
 </div>
@@ -70,11 +70,11 @@
 <!-- Timer input dialog -->
 <div id="timerInputDialog" class="overlay hidden">
   <div class="dialog">
-    <p>Définir le timer (minutes)</p>
+    <p data-i18n="setTimerValue">Set timer value (minutes)</p>
     <input type="number" inputmode="numeric" pattern="[0-9]*" id="timerInput" min="0">
     <div class="dialogButtons">
-      <button id="timerInputOk">OK</button>
-      <button id="timerInputCancel">Annuler</button>
+      <button id="timerInputOk" data-i18n="ok">OK</button>
+      <button id="timerInputCancel" data-i18n="cancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -82,14 +82,15 @@
 <!-- History entries dialog -->
 <div id="historyDialog" class="overlay hidden">
   <div class="dialog historyDialogContent">
-    <p>Historique</p>
+    <p data-i18n="history">History</p>
     <ul id="historyList"></ul>
     <div class="dialogButtons">
-      <button id="historyCloseBtn">Fermer</button>
+      <button id="historyCloseBtn" data-i18n="close">Close</button>
     </div>
   </div>
 </div>
 
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

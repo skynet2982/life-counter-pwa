@@ -271,7 +271,7 @@
     list.innerHTML = "";
     player.historyEntries.forEach((entry) => {
       const li = document.createElement("li");
-      li.textContent = "Life Points : " + entry.value + " at " + formatDate(entry.timestamp);
+      li.textContent = window.i18n.t("historyEntry", entry.value, formatDate(entry.timestamp));
       list.appendChild(li);
     });
     showOverlay("historyDialog");
