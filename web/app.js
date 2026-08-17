@@ -346,6 +346,19 @@
     toggleTimerDisplay();
   });
 
+  document.getElementById("shareBtn").addEventListener("click", () => {
+    hideOverlay("menuSheet");
+    showOverlay("qrShareDialog");
+  });
+  document.getElementById("qrCloseBtn").addEventListener("click", () => hideOverlay("qrShareDialog"));
+
+  function renderShareQrCode() {
+    const qr = qrcode(0, "M");
+    qr.addData(location.href);
+    qr.make();
+    document.getElementById("qrCodeContainer").innerHTML = qr.createSvgTag({ cellSize: 6, margin: 8 });
+  }
+
   function openTimerInputDialog() {
     const input = document.getElementById("timerInput");
     input.value = "";
@@ -381,6 +394,7 @@
 
   refreshViews();
   refreshTimerView();
+  renderShareQrCode();
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

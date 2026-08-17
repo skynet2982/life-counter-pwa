@@ -52,6 +52,7 @@
     <button id="resetGameBtn" class="sheetItem" data-i18n="resetGame">Reset game</button>
     <button id="resetLifeBtn" class="sheetItem" data-i18n="resetLifePoints">Reset life points</button>
     <button id="toggleTimerBtn" class="sheetItem" data-i18n="toggleTimer">Add/Remove timer</button>
+    <button id="shareBtn" class="sheetItem" data-i18n="shareApp">Share app</button>
     <button id="menuCancelBtn" class="sheetItem cancel" data-i18n="cancel">Cancel</button>
   </div>
 </div>
@@ -79,6 +80,17 @@
   </div>
 </div>
 
+<!-- Share QR code dialog -->
+<div id="qrShareDialog" class="overlay hidden">
+  <div class="dialog qrDialogContent">
+    <p data-i18n="scanToOpen">Scan to open Life Counter</p>
+    <div id="qrCodeContainer"></div>
+    <div class="dialogButtons">
+      <button id="qrCloseBtn" data-i18n="close">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- History entries dialog -->
 <div id="historyDialog" class="overlay hidden">
   <div class="dialog historyDialogContent">
@@ -90,6 +102,7 @@
   </div>
 </div>
 
+<script src="qrcode-lib.js"></script>
 <script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
