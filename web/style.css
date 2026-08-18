@@ -83,6 +83,25 @@ body {
   flex-shrink: 0;
 }
 
+.tapHint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.tapHint--add {
+  top: 8px;
+}
+
+.tapHint--remove {
+  bottom: 8px;
+}
+
 .lifePoints {
   color: #fff;
   font-size: clamp(48px, 16vw, 140px);
