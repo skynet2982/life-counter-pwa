@@ -22,51 +22,47 @@
 <div id="app">
 
   <div id="playerLayout">
-    <div class="side">
-      <section class="player" id="player1" data-player="1">
-        <div class="historyStrip historyStrip--left" id="player1History"></div>
-        <div class="playerContent" id="player1Content">
-          <div class="tapHint tapHint--add">+</div>
-          <div class="lifePoints" id="player1Points">20</div>
-          <div class="tapHint tapHint--remove">&minus;</div>
-        </div>
-      </section>
+    <section class="player" id="player1" data-player="1">
+      <div class="historyStrip historyStrip--left" id="player1History"></div>
+      <div class="playerContent" id="player1Content">
+        <div class="tapHint tapHint--add">+</div>
+        <div class="lifePoints" id="player1Points">20</div>
+        <div class="tapHint tapHint--remove">&minus;</div>
+      </div>
+    </section>
 
-      <div class="separator separator--horizontal"></div>
+    <section class="player" id="player2" data-player="2">
+      <div class="playerContent" id="player2Content">
+        <div class="tapHint tapHint--add">+</div>
+        <div class="lifePoints" id="player2Points">20</div>
+        <div class="tapHint tapHint--remove">&minus;</div>
+      </div>
+      <div class="historyStrip historyStrip--right" id="player2History"></div>
+    </section>
 
-      <section class="player player--secondary" id="player3" data-player="3">
-        <div class="historyStrip historyStrip--left" id="player3History"></div>
-        <div class="playerContent" id="player3Content">
-          <div class="tapHint tapHint--add">+</div>
-          <div class="lifePoints" id="player3Points">20</div>
-          <div class="tapHint tapHint--remove">&minus;</div>
-        </div>
-      </section>
-    </div>
+    <section class="player" id="player3" data-player="3">
+      <div class="historyStrip historyStrip--left" id="player3History"></div>
+      <div class="playerContent" id="player3Content">
+        <div class="tapHint tapHint--add">+</div>
+        <div class="lifePoints" id="player3Points">20</div>
+        <div class="tapHint tapHint--remove">&minus;</div>
+      </div>
+    </section>
 
-    <div class="separator"></div>
+    <section class="player" id="player4" data-player="4">
+      <div class="playerContent" id="player4Content">
+        <div class="tapHint tapHint--add">+</div>
+        <div class="lifePoints" id="player4Points">20</div>
+        <div class="tapHint tapHint--remove">&minus;</div>
+      </div>
+      <div class="historyStrip historyStrip--right" id="player4History"></div>
+    </section>
 
-    <div class="side">
-      <section class="player" id="player2" data-player="2">
-        <div class="playerContent" id="player2Content">
-          <div class="tapHint tapHint--add">+</div>
-          <div class="lifePoints" id="player2Points">20</div>
-          <div class="tapHint tapHint--remove">&minus;</div>
-        </div>
-        <div class="historyStrip historyStrip--right" id="player2History"></div>
-      </section>
-
-      <div class="separator separator--horizontal"></div>
-
-      <section class="player player--secondary" id="player4" data-player="4">
-        <div class="playerContent" id="player4Content">
-          <div class="tapHint tapHint--add">+</div>
-          <div class="lifePoints" id="player4Points">20</div>
-          <div class="tapHint tapHint--remove">&minus;</div>
-        </div>
-        <div class="historyStrip historyStrip--right" id="player4History"></div>
-      </section>
-    </div>
+    <div class="separator" id="sepMain"></div>
+    <div class="separator" id="sepLeft"></div>
+    <div class="separator" id="sepRight"></div>
+    <div class="separator" id="sepH1"></div>
+    <div class="separator" id="sepH2"></div>
   </div>
 
   <div id="differenceView"></div>
@@ -107,8 +103,18 @@
   <div class="dialog">
     <p data-i18n="selectGameMode">Select game mode</p>
     <div class="dialogButtons">
-      <button id="mode2Btn" data-i18n="twoPlayers">2 Players</button>
-      <button id="mode4Btn" data-i18n="fourPlayers">4 Players</button>
+      <button id="mode2Btn">
+        <svg class="modeIcon" viewBox="0 0 40 28"><rect x="2" y="2" width="16" height="24" rx="2"/><rect x="22" y="2" width="16" height="24" rx="2"/></svg>
+        <span data-i18n="twoPlayers">2 Players</span>
+      </button>
+      <button id="mode3Btn">
+        <svg class="modeIcon" viewBox="0 0 40 28"><rect x="2" y="2" width="16" height="24" rx="2"/><rect x="22" y="2" width="16" height="11" rx="2"/><rect x="22" y="15" width="16" height="11" rx="2"/></svg>
+        <span data-i18n="threePlayers">3 Players</span>
+      </button>
+      <button id="mode4Btn">
+        <svg class="modeIcon" viewBox="0 0 40 28"><rect x="2" y="2" width="16" height="11" rx="2"/><rect x="22" y="2" width="16" height="11" rx="2"/><rect x="2" y="15" width="16" height="11" rx="2"/><rect x="22" y="15" width="16" height="11" rx="2"/></svg>
+        <span data-i18n="fourPlayers">4 Players</span>
+      </button>
     </div>
     <div class="dialogButtons">
       <button id="gameModeCancelBtn" data-i18n="cancel">Cancel</button>
@@ -121,8 +127,14 @@
   <div class="dialog">
     <p data-i18n="selectFourPlayerLayout">Select 4-player layout</p>
     <div class="dialogButtons">
-      <button id="layoutSidesBtn" data-i18n="layoutSides">2 per side</button>
-      <button id="layoutCornersBtn" data-i18n="layoutCorners">1 per corner</button>
+      <button id="layoutSidesBtn">
+        <svg class="modeIcon" viewBox="0 0 40 28"><rect x="2" y="2" width="16" height="11" rx="2"/><rect x="22" y="2" width="16" height="11" rx="2"/><rect x="2" y="15" width="16" height="11" rx="2"/><rect x="22" y="15" width="16" height="11" rx="2"/></svg>
+        <span data-i18n="layoutSides">2 per side</span>
+      </button>
+      <button id="layoutCornersBtn">
+        <svg class="modeIcon" viewBox="0 0 40 28"><rect x="2" y="2" width="10" height="24" rx="2"/><rect x="15" y="2" width="10" height="11" rx="2"/><rect x="15" y="15" width="10" height="11" rx="2"/><rect x="28" y="2" width="10" height="24" rx="2"/></svg>
+        <span data-i18n="layoutCorners">Sides + middle</span>
+      </button>
     </div>
     <div class="dialogButtons">
       <button id="fourPlayerLayoutCancelBtn" data-i18n="cancel">Cancel</button>

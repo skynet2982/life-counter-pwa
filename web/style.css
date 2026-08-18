@@ -31,27 +31,103 @@ body {
 }
 
 #playerLayout {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  display: grid;
+}
+
+.player {
+  display: none;
+  background: #000;
+  touch-action: none;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.separator {
+  display: none;
+  background: #ccc;
   width: 100%;
   height: 100%;
 }
 
-.side {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-width: 0;
+#player1 { grid-area: p1; }
+#player2 { grid-area: p2; }
+#player3 { grid-area: p3; }
+#player4 { grid-area: p4; }
+#sepMain { grid-area: sepMain; }
+#sepLeft { grid-area: sepLeft; }
+#sepRight { grid-area: sepRight; }
+#sepH1 { grid-area: sepH1; }
+#sepH2 { grid-area: sepH2; }
+
+/* 2 players (default): side by side, full height */
+#app:not(.mode-3):not(.mode-4) #playerLayout {
+  grid-template-columns: 1fr 1px 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "p1 sepMain p2";
+}
+#app:not(.mode-3):not(.mode-4) #player1,
+#app:not(.mode-3):not(.mode-4) #player2,
+#app:not(.mode-3):not(.mode-4) #sepMain {
+  display: block;
 }
 
-.player {
-  flex: 1;
-  background: #000;
-  touch-action: none;
-  position: relative;
+/* 3 players: player1 full height, player2/player3 split on the other side */
+#app.mode-3 #playerLayout {
+  grid-template-columns: 1fr 1px 1fr;
+  grid-template-rows: 1fr 1px 1fr;
+  grid-template-areas:
+    "p1 sepMain p2"
+    "p1 sepMain sepH1"
+    "p1 sepMain p3";
+}
+#app.mode-3 #player1,
+#app.mode-3 #player2,
+#app.mode-3 #player3,
+#app.mode-3 #sepMain,
+#app.mode-3 #sepH1 {
+  display: block;
+}
+
+/* 4 players - "2 per side": both sides split top/bottom */
+#app.mode-4.layout-sides #playerLayout {
+  grid-template-columns: 1fr 1px 1fr;
+  grid-template-rows: 1fr 1px 1fr;
+  grid-template-areas:
+    "p1 sepMain p2"
+    "sepH1 sepMain sepH2"
+    "p3 sepMain p4";
+}
+#app.mode-4.layout-sides #player1,
+#app.mode-4.layout-sides #player2,
+#app.mode-4.layout-sides #player3,
+#app.mode-4.layout-sides #player4,
+#app.mode-4.layout-sides #sepMain,
+#app.mode-4.layout-sides #sepH1,
+#app.mode-4.layout-sides #sepH2 {
+  display: block;
+}
+
+/* 4 players - "sides + middle": player1/player2 full height on the outside,
+   player3/player4 split in the middle column */
+#app.mode-4.layout-corners #playerLayout {
+  grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  grid-template-rows: 1fr 1px 1fr;
+  grid-template-areas:
+    "p1 sepLeft p3 sepRight p2"
+    "p1 sepLeft sepH1 sepRight p2"
+    "p1 sepLeft p4 sepRight p2";
+}
+#app.mode-4.layout-corners #player1,
+#app.mode-4.layout-corners #player2,
+#app.mode-4.layout-corners #player3,
+#app.mode-4.layout-corners #player4,
+#app.mode-4.layout-corners #sepLeft,
+#app.mode-4.layout-corners #sepRight,
+#app.mode-4.layout-corners #sepH1 {
+  display: block;
 }
 
 .playerContent {
@@ -76,32 +152,6 @@ body {
   transform: rotate(270deg);
 }
 
-.player--secondary,
-.separator--horizontal {
-  display: none;
-}
-
-#app.mode-4 .player--secondary {
-  display: flex;
-}
-
-#app.mode-4 .separator--horizontal {
-  display: block;
-}
-
-.separator {
-  width: 1px;
-  background: #ccc;
-  flex-shrink: 0;
-}
-
-.separator--horizontal {
-  width: 100%;
-  height: 1px;
-  background: #ccc;
-  flex-shrink: 0;
-}
-
 .tapHint {
   position: absolute;
   left: 50%;
@@ -111,6 +161,12 @@ body {
   font-weight: 600;
   line-height: 1;
   pointer-events: none;
+}
+
+/* More room per player in 2-player mode, so the hints can be bigger
+   without crowding the number (kept at the same opacity as elsewhere). */
+#app:not(.mode-3):not(.mode-4) .tapHint {
+  font-size: 38px;
 }
 
 .tapHint--add {
@@ -153,11 +209,11 @@ body {
 }
 
 .historyStrip--left {
-  left: env(safe-area-inset-left);
+  left: 0;
 }
 
 .historyStrip--right {
-  right: env(safe-area-inset-right);
+  right: 0;
 }
 
 #differenceView {
@@ -326,12 +382,24 @@ body {
 
 .dialogButtons button {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   padding: 10px;
   border-radius: 8px;
   border: none;
   background: #333;
   color: #fff;
   font-size: 16px;
+}
+
+.modeIcon {
+  width: 40px;
+  height: 28px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
 }
 
 .historyDialogContent {

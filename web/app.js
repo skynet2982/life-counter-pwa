@@ -37,17 +37,19 @@
   let fourPlayerLayout = "sides";
 
   // Rotation (degrees, clockwise) applied to each player's number so players
-  // sitting across the table can read it right-side up. "sides" pairs players
-  // sharing a table edge (same rotation); "corners" gives each player their
-  // own orientation, pinwheel-style.
-  const ROTATIONS = {
+  // sitting across/beside the table can read it right-side up: local "up"
+  // for a given rotation points away from that player's own seat, toward
+  // the table's center (0->screen up, 90->right, 180->down, 270->left).
+  const THREE_PLAYER_ROTATIONS = { 1: 90, 2: 180, 3: 0 };
+  const FOUR_PLAYER_ROTATIONS = {
     sides: { 1: 180, 2: 180, 3: 0, 4: 0 },
-    corners: { 1: 90, 2: 180, 3: 0, 4: 270 },
+    corners: { 1: 90, 2: 270, 3: 180, 4: 0 },
   };
 
   function getRotation(playerId) {
-    if (gameMode !== 4) return 0;
-    return ROTATIONS[fourPlayerLayout][playerId];
+    if (gameMode === 3) return THREE_PLAYER_ROTATIONS[playerId] || 0;
+    if (gameMode === 4) return FOUR_PLAYER_ROTATIONS[fourPlayerLayout][playerId] || 0;
+    return 0;
   }
 
   function applyRotations() {
@@ -183,7 +185,11 @@
     if (mode === 4) {
       fourPlayerLayout = layout;
     }
-    document.getElementById("app").classList.toggle("mode-4", mode === 4);
+    const appEl = document.getElementById("app");
+    appEl.classList.toggle("mode-3", mode === 3);
+    appEl.classList.toggle("mode-4", mode === 4);
+    appEl.classList.toggle("layout-sides", mode === 4 && fourPlayerLayout === "sides");
+    appEl.classList.toggle("layout-corners", mode === 4 && fourPlayerLayout === "corners");
     applyRotations();
     resetGame();
   }
@@ -289,11 +295,14 @@
   }
 
   function handlePointerUp(player, event) {
+    // Swipe (+-5) is only available in 2-player mode - with 3 or 4 players
+    // each quadrant is too small to reliably swipe in, so only tap (+-1) works.
+    const swipeEnabled = gameMode === 2;
     const dx = event.clientX - player.startX;
     const dy = event.clientY - player.startY;
-    const swipeDelta = effectiveSwipeDelta(player.rotation, dx, dy);
+    const swipeDelta = swipeEnabled ? effectiveSwipeDelta(player.rotation, dx, dy) : 0;
 
-    if (Math.abs(swipeDelta) > SWIPE_THRESHOLD) {
+    if (swipeEnabled && Math.abs(swipeDelta) > SWIPE_THRESHOLD) {
       if (swipeDelta > SWIPE_THRESHOLD) {
         player.current += 5;
         difference += 5;
@@ -404,6 +413,10 @@
   });
   document.getElementById("mode2Btn").addEventListener("click", () => {
     setGameMode(2);
+    hideOverlay("gameModeDialog");
+  });
+  document.getElementById("mode3Btn").addEventListener("click", () => {
+    setGameMode(3);
     hideOverlay("gameModeDialog");
   });
   document.getElementById("mode4Btn").addEventListener("click", () => {
