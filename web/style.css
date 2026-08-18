@@ -173,12 +173,26 @@ body {
   pointer-events: none;
 }
 
-.lifePoints {
+.lifePoints,
+.commanderDamagePoints {
   color: #fff;
   font-size: clamp(48px, 20vw, 180px);
   font-weight: 400;
   line-height: 1;
   pointer-events: none;
+}
+
+/* Commander-damage mode (3/4-player only) swaps a target zone's life total
+   for a damage count - same sizing/position as .lifePoints (it sits right
+   below it in the same centered flex stack), just hidden until then. */
+.commanderDamagePoints {
+  display: none;
+}
+.player.commanderTarget .lifePoints {
+  display: none;
+}
+.player.commanderTarget .commanderDamagePoints {
+  display: block;
 }
 
 /* 3/4-player zones can be much shorter than they are wide (or vice versa),
@@ -187,7 +201,9 @@ body {
    what keeps the number and +/- hints from being clipped or overlapping the
    separator in a short "half height" zone. */
 #app.mode-3 .lifePoints,
-#app.mode-4 .lifePoints {
+#app.mode-4 .lifePoints,
+#app.mode-3 .commanderDamagePoints,
+#app.mode-4 .commanderDamagePoints {
   font-size: clamp(32px, 50cqmin, 150px);
 }
 #app.mode-3 .tapHint,
@@ -254,6 +270,91 @@ body {
   left: 10px;
   right: auto;
   bottom: auto;
+}
+
+/* Commander-damage crown button (3/4-player modes only). Same corner-anchor
+   technique as .playerDifference above, but for the LOCAL bottom-right
+   corner (down + right instead of up + right) so it can never collide with
+   the badge, which always sits at local top-right. */
+.crownButton {
+  display: none;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background: #1c1c1e;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  z-index: 6;
+}
+.crownButton svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+#app.mode-3 .crownButton,
+#app.mode-4 .crownButton {
+  display: flex;
+}
+
+.crownButton.rotate-90 { transform: rotate(90deg); }
+.crownButton.rotate-180 { transform: rotate(180deg); }
+.crownButton.rotate-270 { transform: rotate(270deg); }
+
+/* Local "bottom-right" (down + right) rotates one screen corner clockwise
+   per 90deg: bottom-right -> bottom-left -> top-left -> top-right. */
+#app.mode-3 .player.rotate-90 .crownButton,
+#app.mode-4 .player.rotate-90 .crownButton {
+  top: auto;
+  right: auto;
+  bottom: 10px;
+  left: 10px;
+}
+#app.mode-3 .player.rotate-180 .crownButton,
+#app.mode-4 .player.rotate-180 .crownButton {
+  top: 10px;
+  right: auto;
+  bottom: auto;
+  left: 10px;
+}
+#app.mode-3 .player.rotate-270 .crownButton,
+#app.mode-4 .player.rotate-270 .crownButton {
+  top: 10px;
+  right: 10px;
+  bottom: auto;
+  left: auto;
+}
+
+/* While a commander-damage session is active: every zone except the one
+   that opened it (commanderSource) is tinted and stripped down to just the
+   +/- taps and the damage count - badge, history and the crown itself are
+   hidden there so only the source's own crown can end the session. The
+   source's own zone is left completely unstyled/functional so it visually
+   reads as "the one in control". */
+.player.commanderTarget {
+  background: #2a0d10;
+}
+.player.commanderTarget .playerDifference,
+.player.commanderTarget .historyStrip {
+  display: none;
+}
+/* #app-prefixed to outrank #app.mode-3/.mode-4 .crownButton{display:flex}
+   above - a plain .player.commanderTarget .crownButton rule has lower
+   specificity than that ID-anchored rule and would silently lose regardless
+   of source order. */
+#app .player.commanderTarget .crownButton {
+  display: none;
 }
 
 .historyStrip {

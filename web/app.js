@@ -9,7 +9,7 @@
 
   // ---------- state ----------
 
-  function createPlayer(id, el, pointsEl, historyEl, contentEl, differenceEl) {
+  function createPlayer(id, el, pointsEl, historyEl, contentEl, differenceEl, crownEl, commanderDamageEl) {
     return {
       id,
       el,
@@ -22,22 +22,39 @@
       historyEl,
       contentEl,
       differenceEl,
+      crownEl,
+      commanderDamageEl,
       rotation: 0,
       difference: 0, // per-player badge, used in 3/4-player mode only
     };
   }
 
   const players = {
-    1: createPlayer(1, document.getElementById("player1"), document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content"), document.getElementById("player1Difference")),
-    2: createPlayer(2, document.getElementById("player2"), document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content"), document.getElementById("player2Difference")),
-    3: createPlayer(3, document.getElementById("player3"), document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content"), document.getElementById("player3Difference")),
-    4: createPlayer(4, document.getElementById("player4"), document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content"), document.getElementById("player4Difference")),
+    1: createPlayer(1, document.getElementById("player1"), document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content"), document.getElementById("player1Difference"), document.getElementById("player1Crown"), document.getElementById("player1CommanderDamage")),
+    2: createPlayer(2, document.getElementById("player2"), document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content"), document.getElementById("player2Difference"), document.getElementById("player2Crown"), document.getElementById("player2CommanderDamage")),
+    3: createPlayer(3, document.getElementById("player3"), document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content"), document.getElementById("player3Difference"), document.getElementById("player3Crown"), document.getElementById("player3CommanderDamage")),
+    4: createPlayer(4, document.getElementById("player4"), document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content"), document.getElementById("player4Difference"), document.getElementById("player4Crown"), document.getElementById("player4CommanderDamage")),
   };
 
   let difference = 0;
   let activePlayer = null;
   let gameMode = 2;
   let fourPlayerLayout = "sides";
+
+  // Commander damage (3/4-player only): commanderSource is the player who
+  // long-pressed their crown (null when no session is active). commanderDamage
+  // is a full attacker->target matrix so each player's damage dealt to each
+  // opponent is remembered independently across sessions, matching how real
+  // commander damage has to be tracked per opponent (21 from a single source
+  // is a loss condition on its own).
+  let commanderSource = null;
+  const commanderDamage = {};
+  Object.keys(players).forEach((attackerId) => {
+    commanderDamage[attackerId] = {};
+    Object.keys(players).forEach((targetId) => {
+      commanderDamage[attackerId][targetId] = 0;
+    });
+  });
 
   // Rotation (degrees, clockwise) applied to each player's number so players
   // sitting across/beside the table can read it right-side up: local "up"
@@ -70,6 +87,30 @@
           el.classList.add("rotate-" + rotation);
         }
       });
+    });
+  }
+
+  // While a commander-damage session is active, every target zone's content
+  // (number + hints, as one rotated block) displays using the SOURCE
+  // player's rotation rather than its own - the source is the one reading
+  // and tapping every zone during the session, so everything needs to read
+  // correctly to them, not to the zone's usual owner. Tap-half detection
+  // (below, in handlePointerUp) uses this same effective rotation so what
+  // LOOKS like "the source's local top" also BEHAVES like it.
+  function getEffectiveRotation(player) {
+    if (commanderSource && player !== commanderSource) {
+      return commanderSource.rotation;
+    }
+    return player.rotation;
+  }
+
+  function applyCommanderContentRotation() {
+    Object.values(players).forEach((player) => {
+      const rotation = getEffectiveRotation(player);
+      player.contentEl.classList.remove("rotate-90", "rotate-180", "rotate-270");
+      if (rotation) {
+        player.contentEl.classList.add("rotate-" + rotation);
+      }
     });
   }
 
@@ -131,6 +172,70 @@
   function resetPlayerDifference(player) {
     player.difference = 0;
     refreshPlayerDifferenceView(player);
+  }
+
+  // ---------- commander damage ----------
+
+  function refreshCommanderDamageView(target) {
+    target.commanderDamageEl.textContent = String(commanderDamage[commanderSource.id][target.id]);
+  }
+
+  function enterCommanderMode(source) {
+    commanderSource = source;
+    Object.values(players).forEach((player) => {
+      const isTarget = player !== source;
+      player.el.classList.toggle("commanderTarget", isTarget);
+      player.el.classList.toggle("commanderSource", !isTarget);
+      if (isTarget) {
+        refreshCommanderDamageView(player);
+      }
+    });
+    applyCommanderContentRotation();
+  }
+
+  function exitCommanderMode() {
+    if (!commanderSource) return;
+    // Commit whatever life change the session produced to the source's
+    // history right away, exactly like a normal burst of taps would once
+    // the inactivity timer caught up - matches "comme si c'etait des
+    // degats classiques".
+    addToHistory(commanderSource);
+    resetPlayerDifference(commanderSource);
+    commanderSource = null;
+    Object.values(players).forEach((player) => {
+      player.el.classList.remove("commanderTarget", "commanderSource");
+    });
+    applyCommanderContentRotation();
+  }
+
+  // The source deals (or un-deals) 1 commander damage to target. Damage is
+  // clamped at 0; the source's own life only moves by however much damage
+  // actually changed (so tapping "-" at 0 does nothing, per the source's
+  // life either).
+  function applyCommanderDamage(source, target, amount) {
+    const before = commanderDamage[source.id][target.id];
+    const after = Math.max(0, before + amount);
+    const applied = after - before;
+    commanderDamage[source.id][target.id] = after;
+    refreshCommanderDamageView(target);
+    if (applied !== 0) {
+      source.current -= applied;
+      source.difference -= applied;
+      refreshPlayerDifferenceView(source);
+      refreshPlayerView(source);
+      source.lastTouchTs = Date.now();
+    }
+  }
+
+  function resetCommanderDamage() {
+    Object.keys(commanderDamage).forEach((attackerId) => {
+      Object.keys(commanderDamage[attackerId]).forEach((targetId) => {
+        commanderDamage[attackerId][targetId] = 0;
+      });
+    });
+    Object.values(players).forEach((player) => {
+      player.commanderDamageEl.textContent = "0";
+    });
   }
 
   function pad2(n) {
@@ -211,7 +316,20 @@
     refreshDifferenceView();
   }
 
+  // Drops out of an active commander-damage session without touching
+  // history/life (unlike exitCommanderMode) - used when a reset or mode
+  // change already wipes/replaces that state itself, so there's nothing
+  // meaningful left to commit.
+  function forceExitCommanderMode() {
+    commanderSource = null;
+    Object.values(players).forEach((player) => {
+      player.el.classList.remove("commanderTarget", "commanderSource");
+    });
+  }
+
   function resetGameKeepTimer() {
+    forceExitCommanderMode();
+    resetCommanderDamage();
     Object.values(players).forEach((player) => {
       player.current = STARTING_LIFE;
       player.previous = STARTING_LIFE;
@@ -221,6 +339,7 @@
     activePlayer = null;
     resetDifference();
     refreshViews();
+    applyCommanderContentRotation();
   }
 
   function resetTimer() {
@@ -361,9 +480,13 @@
     // Swipe (+-5) is only available in 2-player mode - with 3 or 4 players
     // each quadrant is too small to reliably swipe in, so only tap (+-1) works.
     const swipeEnabled = gameMode === 2;
+    // During a commander-damage session a target zone's tap-half detection
+    // must use the SOURCE's rotation (matching what's actually drawn there -
+    // see getEffectiveRotation), not its own.
+    const rotation = getEffectiveRotation(player);
     const dx = event.clientX - player.startX;
     const dy = event.clientY - player.startY;
-    const swipeDelta = swipeEnabled ? effectiveSwipeDelta(player.rotation, dx, dy) : 0;
+    const swipeDelta = swipeEnabled ? effectiveSwipeDelta(rotation, dx, dy) : 0;
     let amount;
 
     if (swipeEnabled && Math.abs(swipeDelta) > SWIPE_THRESHOLD) {
@@ -372,7 +495,12 @@
       const rect = event.currentTarget.getBoundingClientRect();
       const relativeX = event.clientX - rect.left;
       const relativeY = event.clientY - rect.top;
-      amount = isLocalTopHalf(player.rotation, relativeX, relativeY, rect.width, rect.height) ? 1 : -1;
+      amount = isLocalTopHalf(rotation, relativeX, relativeY, rect.width, rect.height) ? 1 : -1;
+    }
+
+    if (commanderSource && player !== commanderSource) {
+      applyCommanderDamage(commanderSource, player, amount);
+      return;
     }
 
     player.current += amount;
@@ -432,6 +560,10 @@
     const MOVE_TOLERANCE = 15;
 
     el.addEventListener("pointerdown", (e) => {
+      // Stops the tap/swipe handler on the underlying .player zone (this
+      // element's parent) from also firing a life-point change - without
+      // this, every long-press here would also register as a normal tap.
+      e.stopPropagation();
       startX = e.clientX;
       startY = e.clientY;
       timeoutId = setTimeout(() => {
@@ -449,7 +581,8 @@
     });
 
     ["pointerup", "pointerleave", "pointercancel"].forEach((evt) => {
-      el.addEventListener(evt, () => {
+      el.addEventListener(evt, (e) => {
+        e.stopPropagation();
         if (timeoutId !== null) {
           clearTimeout(timeoutId);
           timeoutId = null;
@@ -460,6 +593,22 @@
 
   Object.values(players).forEach((player) => {
     attachLongPress(player.historyEl, () => openHistoryDialog(player));
+  });
+
+  // ---------- commander damage crown ----------
+
+  Object.values(players).forEach((player) => {
+    attachLongPress(player.crownEl, () => {
+      if (commanderSource === player) {
+        exitCommanderMode();
+      } else if (commanderSource === null) {
+        enterCommanderMode(player);
+      }
+      // A session started by a different player is active: the crown is
+      // hidden on every other zone in that case (see .commanderTarget
+      // .crownButton in style.css), so this branch shouldn't normally be
+      // reachable - left unhandled on purpose rather than guarded twice.
+    });
   });
 
   // ---------- overlays / dialogs ----------
