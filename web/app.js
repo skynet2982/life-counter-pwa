@@ -9,9 +9,10 @@
 
   // ---------- state ----------
 
-  function createPlayer(id, pointsEl, historyEl, contentEl, differenceEl) {
+  function createPlayer(id, el, pointsEl, historyEl, contentEl, differenceEl) {
     return {
       id,
+      el,
       current: STARTING_LIFE,
       previous: STARTING_LIFE,
       lastTouchTs: Date.now(),
@@ -27,10 +28,10 @@
   }
 
   const players = {
-    1: createPlayer(1, document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content"), document.getElementById("player1Difference")),
-    2: createPlayer(2, document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content"), document.getElementById("player2Difference")),
-    3: createPlayer(3, document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content"), document.getElementById("player3Difference")),
-    4: createPlayer(4, document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content"), document.getElementById("player4Difference")),
+    1: createPlayer(1, document.getElementById("player1"), document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content"), document.getElementById("player1Difference")),
+    2: createPlayer(2, document.getElementById("player2"), document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content"), document.getElementById("player2Difference")),
+    3: createPlayer(3, document.getElementById("player3"), document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content"), document.getElementById("player3Difference")),
+    4: createPlayer(4, document.getElementById("player4"), document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content"), document.getElementById("player4Difference")),
   };
 
   let difference = 0;
@@ -54,14 +55,21 @@
     return 0;
   }
 
+  // The rotation class is applied to several independent elements (not just
+  // .playerContent): .player itself (so CSS can position the history strip
+  // and difference badge per-rotation without overflowing a non-square box -
+  // see the historyStrip/playerDifference rules in style.css) and the badge
+  // element (so its own text reads right-side up).
   function applyRotations() {
     Object.values(players).forEach((player) => {
       const rotation = getRotation(player.id);
       player.rotation = rotation;
-      player.contentEl.classList.remove("rotate-90", "rotate-180", "rotate-270");
-      if (rotation) {
-        player.contentEl.classList.add("rotate-" + rotation);
-      }
+      [player.el, player.contentEl, player.differenceEl].forEach((el) => {
+        el.classList.remove("rotate-90", "rotate-180", "rotate-270");
+        if (rotation) {
+          el.classList.add("rotate-" + rotation);
+        }
+      });
     });
   }
 
@@ -155,6 +163,9 @@
   // Renders each history entry as its own element (rather than one text
   // blob) so it can carry the player's own rotation class - readable in the
   // same orientation as their life total, matching how .playerContent works.
+  // In 3/4-player mode the strip itself is repositioned and reflowed
+  // (vertical vs horizontal, normal vs reversed) per rotation in CSS - see
+  // the #app.mode-3/.mode-4 .player.rotate-N .historyStrip rules.
   function renderHistoryStrip(player) {
     player.historyEl.innerHTML = "";
     const rotationClass = player.rotation ? "rotate-" + player.rotation : "";
@@ -164,7 +175,13 @@
       lineEl.textContent = line;
       player.historyEl.appendChild(lineEl);
     });
-    player.historyEl.scrollTop = player.historyEl.scrollHeight;
+    // scrollIntoView (rather than a hardcoded scrollTop/scrollLeft axis)
+    // keeps the newest entry visible regardless of whether the strip is
+    // currently laid out as a column or a row.
+    const lastEl = player.historyEl.lastElementChild;
+    if (lastEl) {
+      lastEl.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
   }
 
   function addToHistory(player) {

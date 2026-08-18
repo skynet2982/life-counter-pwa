@@ -43,6 +43,10 @@ body {
   position: relative;
   min-width: 0;
   min-height: 0;
+  /* Lets .lifePoints/.tapHint size themselves off this player's own zone
+     (cqmin units below) instead of the full viewport, so text always fits
+     regardless of how small/short an individual zone is. */
+  container-type: size;
 }
 
 .separator {
@@ -177,24 +181,41 @@ body {
   pointer-events: none;
 }
 
+/* 3/4-player zones can be much shorter than they are wide (or vice versa),
+   so size text off the zone's own smaller dimension (cqmin, from
+   container-type:size on .player above) instead of viewport width - this is
+   what keeps the number and +/- hints from being clipped or overlapping the
+   separator in a short "half height" zone. 2-player mode is left on its
+   original viewport-based sizing untouched. */
+#app.mode-3 .lifePoints,
+#app.mode-4 .lifePoints {
+  font-size: clamp(32px, 26cqmin, 140px);
+}
+#app.mode-3 .tapHint,
+#app.mode-4 .tapHint {
+  font-size: clamp(18px, 10cqmin, 38px);
+}
+
 /* Per-player difference badge (3/4-player modes only - 2-player mode keeps
-   the single shared #differenceView). Positioned at a small fixed offset
-   from the player content's own center, inside the same rotated wrapper, so
-   it always reads as "top-right of my number" from that player's own
-   perspective regardless of orientation - and, being a small fixed offset
-   rather than anchored to the box edges, it can't overflow a non-square box
-   the way an edge-anchored element would under a 90/270 rotation. */
+   the single shared #differenceView). A sibling of .playerContent (not a
+   child of it), pinned a small fixed margin from a screen corner directly -
+   which corner depends on rotation (see the rotate-N rules below), following
+   the same "local up/right" mapping used for gestures elsewhere in app.js.
+   A corner offset measured from .playerContent's own center would need to
+   reach further along the box's long axis than a 90/270-rotated box has
+   room for on its short axis (the same overflow class of bug the history
+   strip has); anchoring to a real screen corner with a small margin instead
+   sidesteps that regardless of how tall/narrow or short/wide the zone is. */
 .playerDifference {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 10px;
+  right: 10px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translate(-50%, -50%) translate(66px, -66px);
   color: #fff;
   font-size: 16px;
   font-weight: 600;
@@ -206,11 +227,44 @@ body {
   background: #fff;
 }
 
+/* The badge is square, so rotating it in place (about its own center) to
+   orient its text can never overflow the way a non-square element would. */
+.playerDifference.rotate-90 { transform: rotate(90deg); }
+.playerDifference.rotate-180 { transform: rotate(180deg); }
+.playerDifference.rotate-270 { transform: rotate(270deg); }
+
+/* Local "top-right" (up + right) rotates one screen corner clockwise per
+   90deg of rotation: top-right -> bottom-right -> bottom-left -> top-left. */
+#app.mode-3 .player.rotate-90 .playerDifference,
+#app.mode-4 .player.rotate-90 .playerDifference {
+  top: auto;
+  right: 10px;
+  bottom: 10px;
+  left: auto;
+}
+#app.mode-3 .player.rotate-180 .playerDifference,
+#app.mode-4 .player.rotate-180 .playerDifference {
+  top: auto;
+  bottom: 10px;
+  left: 10px;
+  right: auto;
+}
+#app.mode-3 .player.rotate-270 .playerDifference,
+#app.mode-4 .player.rotate-270 .playerDifference {
+  top: 10px;
+  left: 10px;
+  right: auto;
+  bottom: auto;
+}
+
 .historyStrip {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
   background: #000;
@@ -218,10 +272,14 @@ body {
   font-size: 17px;
   line-height: 1.3;
   text-align: center;
-  padding: 2px 0;
+  padding: 4px;
   z-index: 5;
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.historyStrip > div {
+  flex-shrink: 0;
 }
 
 .historyStrip::-webkit-scrollbar {
@@ -234,6 +292,66 @@ body {
 
 .historyStrip--right {
   right: 0;
+}
+
+/* 3/4-player mode: history always sits at the player's own LOCAL-left edge
+   (overriding the raw --left/--right split above, which only applies to
+   2-player mode's unrotated players) and runs the direction that reads as
+   "top to bottom" from that player's own seat. A 90/270 rotation swaps
+   which raw axis is the box's "tall" one, so the strip's long axis is
+   capped to the box's own matching raw dimension (left:0;right:0 = the
+   box's actual width) instead of always spanning its full raw height -
+   otherwise, on a tall narrow zone rotated 90/270, it would need more
+   room than the zone is wide and spill into the neighboring player/
+   separator, the same overflow class of bug .tapHint had before it was
+   made a flow child instead of edge-anchored. */
+#app.mode-3 .historyStrip,
+#app.mode-4 .historyStrip {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  width: 64px;
+  height: auto;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#app.mode-3 .player.rotate-90 .historyStrip,
+#app.mode-4 .player.rotate-90 .historyStrip {
+  top: 0;
+  bottom: auto;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: 64px;
+  flex-direction: row-reverse;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+#app.mode-3 .player.rotate-180 .historyStrip,
+#app.mode-4 .player.rotate-180 .historyStrip {
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  width: 64px;
+  height: auto;
+  flex-direction: column-reverse;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#app.mode-3 .player.rotate-270 .historyStrip,
+#app.mode-4 .player.rotate-270 .historyStrip {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: 64px;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .historyEntryLine.rotate-90 {
