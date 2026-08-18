@@ -9,7 +9,7 @@
 
   // ---------- state ----------
 
-  function createPlayer(id, pointsEl, historyEl, contentEl) {
+  function createPlayer(id, pointsEl, historyEl, contentEl, differenceEl) {
     return {
       id,
       current: STARTING_LIFE,
@@ -20,15 +20,17 @@
       pointsEl,
       historyEl,
       contentEl,
+      differenceEl,
       rotation: 0,
+      difference: 0, // per-player badge, used in 3/4-player mode only
     };
   }
 
   const players = {
-    1: createPlayer(1, document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content")),
-    2: createPlayer(2, document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content")),
-    3: createPlayer(3, document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content")),
-    4: createPlayer(4, document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content")),
+    1: createPlayer(1, document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content"), document.getElementById("player1Difference")),
+    2: createPlayer(2, document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content"), document.getElementById("player2Difference")),
+    3: createPlayer(3, document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content"), document.getElementById("player3Difference")),
+    4: createPlayer(4, document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content"), document.getElementById("player4Difference")),
   };
 
   let difference = 0;
@@ -99,6 +101,30 @@
     refreshDifferenceView();
   }
 
+  // Per-player difference badge, used instead of the single shared one in
+  // 3/4-player mode so several players can tap concurrently without
+  // stepping on each other's indicator.
+  function refreshPlayerDifferenceView(player) {
+    const el = player.differenceEl;
+    if (player.difference === 0) {
+      el.textContent = "";
+      el.classList.remove("hasValue");
+    } else if (player.difference > 0) {
+      el.textContent = "+" + player.difference;
+      el.style.color = "#2e7d32";
+      el.classList.add("hasValue");
+    } else {
+      el.textContent = String(player.difference);
+      el.style.color = "#c62828";
+      el.classList.add("hasValue");
+    }
+  }
+
+  function resetPlayerDifference(player) {
+    player.difference = 0;
+    refreshPlayerDifferenceView(player);
+  }
+
   function pad2(n) {
     return String(n).padStart(2, "0");
   }
@@ -126,6 +152,21 @@
 
   // ---------- history ----------
 
+  // Renders each history entry as its own element (rather than one text
+  // blob) so it can carry the player's own rotation class - readable in the
+  // same orientation as their life total, matching how .playerContent works.
+  function renderHistoryStrip(player) {
+    player.historyEl.innerHTML = "";
+    const rotationClass = player.rotation ? "rotate-" + player.rotation : "";
+    player.historyLines.forEach((line) => {
+      const lineEl = document.createElement("div");
+      lineEl.className = "historyEntryLine" + (rotationClass ? " " + rotationClass : "");
+      lineEl.textContent = line;
+      player.historyEl.appendChild(lineEl);
+    });
+    player.historyEl.scrollTop = player.historyEl.scrollHeight;
+  }
+
   function addToHistory(player) {
     if (player.current === player.previous) {
       return;
@@ -136,15 +177,14 @@
     }
     player.historyLines.push(String(player.current));
     player.historyEntries.push({ timestamp: Date.now(), value: player.current });
-    player.historyEl.textContent = player.historyLines.join("\n");
-    player.historyEl.scrollTop = player.historyEl.scrollHeight;
+    renderHistoryStrip(player);
     player.previous = player.current;
   }
 
   function resetPlayerHistory(player) {
     player.historyEntries = [];
     player.historyLines = [];
-    player.historyEl.textContent = "";
+    player.historyEl.innerHTML = "";
   }
 
   // ---------- game actions ----------
@@ -159,6 +199,7 @@
       player.current = STARTING_LIFE;
       player.previous = STARTING_LIFE;
       resetPlayerHistory(player);
+      resetPlayerDifference(player);
     });
     activePlayer = null;
     resetDifference();
@@ -285,11 +326,16 @@
       startTimer();
     }
 
-    if (activePlayer !== null && activePlayer !== player) {
-      addToHistory(activePlayer);
-      resetDifference();
+    // Only 2-player mode uses the single shared badge/history-commit-on-switch
+    // model (matches the original app). 3/4-player mode tracks each player
+    // independently below, since several players can be mid-gesture at once.
+    if (gameMode === 2) {
+      if (activePlayer !== null && activePlayer !== player) {
+        addToHistory(activePlayer);
+        resetDifference();
+      }
+      activePlayer = player;
     }
-    activePlayer = player;
     player.startX = event.clientX;
     player.startY = event.clientY;
   }
@@ -301,26 +347,24 @@
     const dx = event.clientX - player.startX;
     const dy = event.clientY - player.startY;
     const swipeDelta = swipeEnabled ? effectiveSwipeDelta(player.rotation, dx, dy) : 0;
+    let amount;
 
     if (swipeEnabled && Math.abs(swipeDelta) > SWIPE_THRESHOLD) {
-      if (swipeDelta > SWIPE_THRESHOLD) {
-        player.current += 5;
-        difference += 5;
-      } else {
-        player.current -= 5;
-        difference -= 5;
-      }
+      amount = swipeDelta > SWIPE_THRESHOLD ? 5 : -5;
     } else {
       const rect = event.currentTarget.getBoundingClientRect();
       const relativeX = event.clientX - rect.left;
       const relativeY = event.clientY - rect.top;
-      if (isLocalTopHalf(player.rotation, relativeX, relativeY, rect.width, rect.height)) {
-        player.current += 1;
-        difference += 1;
-      } else {
-        player.current -= 1;
-        difference -= 1;
-      }
+      amount = isLocalTopHalf(player.rotation, relativeX, relativeY, rect.width, rect.height) ? 1 : -1;
+    }
+
+    player.current += amount;
+    if (gameMode === 2) {
+      difference += amount;
+      refreshDifferenceView();
+    } else {
+      player.difference += amount;
+      refreshPlayerDifferenceView(player);
     }
 
     refreshViews();
@@ -334,14 +378,21 @@
   });
 
   setInterval(() => {
-    if (activePlayer !== null) {
-      const now = Date.now();
-      if (now - activePlayer.lastTouchTs >= INACTIVITY_TIMEOUT) {
+    const now = Date.now();
+    if (gameMode === 2) {
+      if (activePlayer !== null && now - activePlayer.lastTouchTs >= INACTIVITY_TIMEOUT) {
         addToHistory(activePlayer);
         resetDifference();
         activePlayer = null;
       }
+      return;
     }
+    Object.values(players).forEach((player) => {
+      if (player.difference !== 0 && now - player.lastTouchTs >= INACTIVITY_TIMEOUT) {
+        addToHistory(player);
+        resetPlayerDifference(player);
+      }
+    });
   }, INACTIVITY_TIMEOUT);
 
   // ---------- history long-press dialog ----------
