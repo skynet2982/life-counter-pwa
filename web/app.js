@@ -335,6 +335,7 @@
   }
 
   function resetGameKeepTimer() {
+    stopRoulette();
     forceExitCommanderMode();
     resetCommanderDamage();
     const startingLife = getStartingLife();
@@ -366,6 +367,7 @@
   function setGameMode(mode, layout) {
     const targetLayout = mode === 4 ? layout : fourPlayerLayout;
     if (mode === gameMode && targetLayout === fourPlayerLayout) return;
+    stopRoulette();
     gameMode = mode;
     if (mode === 4) {
       fourPlayerLayout = layout;
@@ -377,6 +379,73 @@
     appEl.classList.toggle("layout-corners", mode === 4 && fourPlayerLayout === "corners");
     applyRotations();
     resetGame();
+  }
+
+  // ---------- starting player roulette ----------
+
+  const ROULETTE_MIN_DELAY = 70;
+  const ROULETTE_MAX_DELAY = 350;
+  const ROULETTE_BASE_TICKS = 18; // ~3s of decelerating ticks before landing
+  const ROULETTE_HOLD_MS = 2000; // stay lit on the winner before clearing
+
+  let rouletteRunning = false;
+  let rouletteTimeoutId = null;
+
+  function getActivePlayerList() {
+    if (gameMode === 3) return [players[1], players[2], players[3]];
+    if (gameMode === 4) return [players[1], players[2], players[3], players[4]];
+    return [players[1], players[2]];
+  }
+
+  function clearRouletteHighlight() {
+    Object.values(players).forEach((player) => player.el.classList.remove("rouletteHighlight"));
+  }
+
+  // Cancels any in-progress spin and clears its highlight - used when the
+  // game mode changes or the game resets mid-spin, so nothing is left
+  // pointing at a stale layout.
+  function stopRoulette() {
+    if (rouletteTimeoutId !== null) {
+      clearTimeout(rouletteTimeoutId);
+      rouletteTimeoutId = null;
+    }
+    rouletteRunning = false;
+    clearRouletteHighlight();
+  }
+
+  function pickStartingPlayer() {
+    if (rouletteRunning) return;
+    rouletteRunning = true;
+
+    const activePlayers = getActivePlayerList();
+    const n = activePlayers.length;
+    const winnerIndex = Math.floor(Math.random() * n);
+    // The tick count is padded up to the next value that lands on the
+    // winner (at most n-1 extra ticks) so the winner stays uniformly random
+    // regardless of how many players are in the spin.
+    let totalTicks = ROULETTE_BASE_TICKS;
+    while ((totalTicks - 1) % n !== winnerIndex) {
+      totalTicks++;
+    }
+
+    function showTick(i) {
+      clearRouletteHighlight();
+      activePlayers[i % n].el.classList.add("rouletteHighlight");
+      if (i < totalTicks - 1) {
+        // Quadratic ease-out: fast at the start, slowing into the landing.
+        const progress = i / (totalTicks - 1);
+        const delay = ROULETTE_MIN_DELAY + (ROULETTE_MAX_DELAY - ROULETTE_MIN_DELAY) * progress * progress;
+        rouletteTimeoutId = setTimeout(() => showTick(i + 1), delay);
+      } else {
+        rouletteTimeoutId = setTimeout(() => {
+          rouletteTimeoutId = null;
+          rouletteRunning = false;
+          clearRouletteHighlight();
+        }, ROULETTE_HOLD_MS);
+      }
+    }
+
+    showTick(0);
   }
 
   // ---------- timer ----------
@@ -635,6 +704,10 @@
   document.getElementById("gameModeBtn").addEventListener("click", () => {
     hideOverlay("menuSheet");
     showOverlay("gameModeDialog");
+  });
+  document.getElementById("startingPlayerBtn").addEventListener("click", () => {
+    hideOverlay("menuSheet");
+    pickStartingPlayer();
   });
   document.getElementById("mode2Btn").addEventListener("click", () => {
     setGameMode(2);

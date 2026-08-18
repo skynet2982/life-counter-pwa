@@ -368,6 +368,14 @@ body {
   display: none;
 }
 
+/* Starting-player roulette: cycles this across each active player's zone in
+   turn, landing on the randomly chosen winner. A background tint (same
+   mechanism as .commanderTarget) rather than a border/outline, since it
+   needs to read clearly at a glance while flashing through zones quickly. */
+.player.rouletteHighlight {
+  background: #0d3d78;
+}
+
 .historyStrip {
   position: absolute;
   top: 0;
