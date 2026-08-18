@@ -9,8 +9,9 @@
 
   // ---------- state ----------
 
-  function createPlayer(pointsEl, historyEl) {
+  function createPlayer(id, pointsEl, historyEl, contentEl) {
     return {
+      id,
       current: STARTING_LIFE,
       previous: STARTING_LIFE,
       lastTouchTs: Date.now(),
@@ -18,19 +19,47 @@
       historyLines: [],
       pointsEl,
       historyEl,
+      contentEl,
+      rotation: 0,
     };
   }
 
   const players = {
-    1: createPlayer(document.getElementById("player1Points"), document.getElementById("player1History")),
-    2: createPlayer(document.getElementById("player2Points"), document.getElementById("player2History")),
-    3: createPlayer(document.getElementById("player3Points"), document.getElementById("player3History")),
-    4: createPlayer(document.getElementById("player4Points"), document.getElementById("player4History")),
+    1: createPlayer(1, document.getElementById("player1Points"), document.getElementById("player1History"), document.getElementById("player1Content")),
+    2: createPlayer(2, document.getElementById("player2Points"), document.getElementById("player2History"), document.getElementById("player2Content")),
+    3: createPlayer(3, document.getElementById("player3Points"), document.getElementById("player3History"), document.getElementById("player3Content")),
+    4: createPlayer(4, document.getElementById("player4Points"), document.getElementById("player4History"), document.getElementById("player4Content")),
   };
 
   let difference = 0;
   let activePlayer = null;
   let gameMode = 2;
+  let fourPlayerLayout = "sides";
+
+  // Rotation (degrees, clockwise) applied to each player's number so players
+  // sitting across the table can read it right-side up. "sides" pairs players
+  // sharing a table edge (same rotation); "corners" gives each player their
+  // own orientation, pinwheel-style.
+  const ROTATIONS = {
+    sides: { 1: 180, 2: 180, 3: 0, 4: 0 },
+    corners: { 1: 90, 2: 180, 3: 0, 4: 270 },
+  };
+
+  function getRotation(playerId) {
+    if (gameMode !== 4) return 0;
+    return ROTATIONS[fourPlayerLayout][playerId];
+  }
+
+  function applyRotations() {
+    Object.values(players).forEach((player) => {
+      const rotation = getRotation(player.id);
+      player.rotation = rotation;
+      player.contentEl.classList.remove("rotate-90", "rotate-180", "rotate-270");
+      if (rotation) {
+        player.contentEl.classList.add("rotate-" + rotation);
+      }
+    });
+  }
 
   const differenceEl = document.getElementById("differenceView");
 
@@ -147,10 +176,15 @@
     resetTimer();
   }
 
-  function setGameMode(mode) {
-    if (mode === gameMode) return;
+  function setGameMode(mode, layout) {
+    const targetLayout = mode === 4 ? layout : fourPlayerLayout;
+    if (mode === gameMode && targetLayout === fourPlayerLayout) return;
     gameMode = mode;
+    if (mode === 4) {
+      fourPlayerLayout = layout;
+    }
     document.getElementById("app").classList.toggle("mode-4", mode === 4);
+    applyRotations();
     resetGame();
   }
 
@@ -215,6 +249,31 @@
 
   // ---------- player touch handling ----------
 
+  // A rotated player's visual "up" points in a different raw screen direction
+  // than an unrotated one (CSS rotate() is clockwise): 0deg->screen up,
+  // 90deg->screen right, 180deg->screen down, 270deg->screen left. These
+  // helpers translate a raw pointer delta/position into "does this count as
+  // swiping/tapping toward that player's own up" so gestures feel natural
+  // regardless of orientation.
+
+  function effectiveSwipeDelta(rotation, dx, dy) {
+    switch (rotation) {
+      case 90: return dx;
+      case 180: return dy;
+      case 270: return -dx;
+      default: return -dy;
+    }
+  }
+
+  function isLocalTopHalf(rotation, relativeX, relativeY, width, height) {
+    switch (rotation) {
+      case 90: return relativeX > width / 2;
+      case 180: return relativeY > height / 2;
+      case 270: return relativeX < width / 2;
+      default: return relativeY < height / 2;
+    }
+  }
+
   function handlePointerDown(player, event) {
     if (timer.displayed && !timer.running) {
       startTimer();
@@ -225,15 +284,17 @@
       resetDifference();
     }
     activePlayer = player;
+    player.startX = event.clientX;
     player.startY = event.clientY;
   }
 
   function handlePointerUp(player, event) {
-    const endY = event.clientY;
-    const deltaY = player.startY - endY;
+    const dx = event.clientX - player.startX;
+    const dy = event.clientY - player.startY;
+    const swipeDelta = effectiveSwipeDelta(player.rotation, dx, dy);
 
-    if (Math.abs(deltaY) > SWIPE_THRESHOLD) {
-      if (deltaY > SWIPE_THRESHOLD) {
+    if (Math.abs(swipeDelta) > SWIPE_THRESHOLD) {
+      if (swipeDelta > SWIPE_THRESHOLD) {
         player.current += 5;
         difference += 5;
       } else {
@@ -242,8 +303,9 @@
       }
     } else {
       const rect = event.currentTarget.getBoundingClientRect();
+      const relativeX = event.clientX - rect.left;
       const relativeY = event.clientY - rect.top;
-      if (relativeY < rect.height / 2) {
+      if (isLocalTopHalf(player.rotation, relativeX, relativeY, rect.width, rect.height)) {
         player.current += 1;
         difference += 1;
       } else {
@@ -345,10 +407,20 @@
     hideOverlay("gameModeDialog");
   });
   document.getElementById("mode4Btn").addEventListener("click", () => {
-    setGameMode(4);
     hideOverlay("gameModeDialog");
+    showOverlay("fourPlayerLayoutDialog");
   });
   document.getElementById("gameModeCancelBtn").addEventListener("click", () => hideOverlay("gameModeDialog"));
+
+  document.getElementById("layoutSidesBtn").addEventListener("click", () => {
+    setGameMode(4, "sides");
+    hideOverlay("fourPlayerLayoutDialog");
+  });
+  document.getElementById("layoutCornersBtn").addEventListener("click", () => {
+    setGameMode(4, "corners");
+    hideOverlay("fourPlayerLayoutDialog");
+  });
+  document.getElementById("fourPlayerLayoutCancelBtn").addEventListener("click", () => hideOverlay("fourPlayerLayoutDialog"));
 
   document.getElementById("resetGameBtn").addEventListener("click", () => {
     hideOverlay("menuSheet");

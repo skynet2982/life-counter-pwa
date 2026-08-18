@@ -25,18 +25,22 @@
     <div class="side">
       <section class="player" id="player1" data-player="1">
         <div class="historyStrip historyStrip--left" id="player1History"></div>
-        <div class="tapHint tapHint--add">+</div>
-        <div class="lifePoints" id="player1Points">20</div>
-        <div class="tapHint tapHint--remove">&minus;</div>
+        <div class="playerContent" id="player1Content">
+          <div class="tapHint tapHint--add">+</div>
+          <div class="lifePoints" id="player1Points">20</div>
+          <div class="tapHint tapHint--remove">&minus;</div>
+        </div>
       </section>
 
       <div class="separator separator--horizontal"></div>
 
       <section class="player player--secondary" id="player3" data-player="3">
         <div class="historyStrip historyStrip--left" id="player3History"></div>
-        <div class="tapHint tapHint--add">+</div>
-        <div class="lifePoints" id="player3Points">20</div>
-        <div class="tapHint tapHint--remove">&minus;</div>
+        <div class="playerContent" id="player3Content">
+          <div class="tapHint tapHint--add">+</div>
+          <div class="lifePoints" id="player3Points">20</div>
+          <div class="tapHint tapHint--remove">&minus;</div>
+        </div>
       </section>
     </div>
 
@@ -44,18 +48,22 @@
 
     <div class="side">
       <section class="player" id="player2" data-player="2">
-        <div class="tapHint tapHint--add">+</div>
-        <div class="lifePoints" id="player2Points">20</div>
-        <div class="tapHint tapHint--remove">&minus;</div>
+        <div class="playerContent" id="player2Content">
+          <div class="tapHint tapHint--add">+</div>
+          <div class="lifePoints" id="player2Points">20</div>
+          <div class="tapHint tapHint--remove">&minus;</div>
+        </div>
         <div class="historyStrip historyStrip--right" id="player2History"></div>
       </section>
 
       <div class="separator separator--horizontal"></div>
 
       <section class="player player--secondary" id="player4" data-player="4">
-        <div class="tapHint tapHint--add">+</div>
-        <div class="lifePoints" id="player4Points">20</div>
-        <div class="tapHint tapHint--remove">&minus;</div>
+        <div class="playerContent" id="player4Content">
+          <div class="tapHint tapHint--add">+</div>
+          <div class="lifePoints" id="player4Points">20</div>
+          <div class="tapHint tapHint--remove">&minus;</div>
+        </div>
         <div class="historyStrip historyStrip--right" id="player4History"></div>
       </section>
     </div>
@@ -104,6 +112,20 @@
     </div>
     <div class="dialogButtons">
       <button id="gameModeCancelBtn" data-i18n="cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4-player layout dialog -->
+<div id="fourPlayerLayoutDialog" class="overlay hidden">
+  <div class="dialog">
+    <p data-i18n="selectFourPlayerLayout">Select 4-player layout</p>
+    <div class="dialogButtons">
+      <button id="layoutSidesBtn" data-i18n="layoutSides">2 per side</button>
+      <button id="layoutCornersBtn" data-i18n="layoutCorners">1 per corner</button>
+    </div>
+    <div class="dialogButtons">
+      <button id="fourPlayerLayoutCancelBtn" data-i18n="cancel">Cancel</button>
     </div>
   </div>
 </div>
