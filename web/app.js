@@ -1,7 +1,8 @@
 (() => {
   "use strict";
 
-  const STARTING_LIFE = 20;
+  const STARTING_LIFE_DEFAULT = 20;
+  const STARTING_LIFE_MULTIPLAYER = 40;
   const SWIPE_THRESHOLD = 100;
   const INACTIVITY_TIMEOUT = 1000;
   const LONG_PRESS_DELAY = 500;
@@ -13,8 +14,8 @@
     return {
       id,
       el,
-      current: STARTING_LIFE,
-      previous: STARTING_LIFE,
+      current: STARTING_LIFE_DEFAULT,
+      previous: STARTING_LIFE_DEFAULT,
       lastTouchTs: Date.now(),
       historyEntries: [], // { timestamp, value }
       historyLines: [],
@@ -65,6 +66,12 @@
     sides: { 1: 180, 2: 180, 3: 0, 4: 0 },
     corners: { 1: 90, 2: 270, 3: 180, 4: 0 },
   };
+
+  // Commander/multiplayer games conventionally start at 40 life rather than
+  // the 1v1 default of 20.
+  function getStartingLife() {
+    return gameMode === 3 || gameMode === 4 ? STARTING_LIFE_MULTIPLAYER : STARTING_LIFE_DEFAULT;
+  }
 
   function getRotation(playerId) {
     if (gameMode === 3) return THREE_PLAYER_ROTATIONS[playerId] || 0;
@@ -330,9 +337,10 @@
   function resetGameKeepTimer() {
     forceExitCommanderMode();
     resetCommanderDamage();
+    const startingLife = getStartingLife();
     Object.values(players).forEach((player) => {
-      player.current = STARTING_LIFE;
-      player.previous = STARTING_LIFE;
+      player.current = startingLife;
+      player.previous = startingLife;
       resetPlayerHistory(player);
       resetPlayerDifference(player);
     });
