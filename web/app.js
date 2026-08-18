@@ -75,13 +75,13 @@
   // The rotation class is applied to several independent elements (not just
   // .playerContent): .player itself (so CSS can position the history strip
   // and difference badge per-rotation without overflowing a non-square box -
-  // see the historyStrip/playerDifference rules in style.css) and the badge
-  // element (so its own text reads right-side up).
+  // see the historyStrip/playerDifference rules in style.css), the badge and
+  // the crown button (so their own icon/text reads right-side up).
   function applyRotations() {
     Object.values(players).forEach((player) => {
       const rotation = getRotation(player.id);
       player.rotation = rotation;
-      [player.el, player.contentEl, player.differenceEl].forEach((el) => {
+      [player.el, player.contentEl, player.differenceEl, player.crownEl].forEach((el) => {
         el.classList.remove("rotate-90", "rotate-180", "rotate-270");
         if (rotation) {
           el.classList.add("rotate-" + rotation);
