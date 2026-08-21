@@ -797,6 +797,33 @@
   window.addEventListener("load", tryLockOrientation);
   document.addEventListener("pointerdown", tryLockOrientation, { once: true });
 
+  // ---------- screen wake lock (best effort, ignored where unsupported) ----------
+
+  // A wake lock is auto-released whenever the tab/app goes to the
+  // background (screen off, app switch, etc.) and has to be re-requested
+  // once it's visible again - it does not survive on its own.
+  let wakeLock = null;
+
+  function requestWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    navigator.wakeLock.request("screen").then((lock) => {
+      wakeLock = lock;
+      wakeLock.addEventListener("release", () => {
+        wakeLock = null;
+      });
+    }).catch(() => {
+      /* best-effort - e.g. permission denied, low battery mode */
+    });
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      requestWakeLock();
+    }
+  });
+  window.addEventListener("load", requestWakeLock);
+  document.addEventListener("pointerdown", requestWakeLock, { once: true });
+
   // ---------- init ----------
 
   refreshViews();
